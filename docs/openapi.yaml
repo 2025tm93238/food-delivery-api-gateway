@@ -1,0 +1,103 @@
+openapi: 3.0.3
+
+info:
+  title: API Gateway — Food Delivery System
+  version: "1.0.0"
+  description: |
+    Entry point for all client traffic. Proxies `/v1/*` to the appropriate
+    backend service and propagates `X-Correlation-Id` for distributed tracing.
+
+    For per-service schemas, see each service's own `/docs`:
+    - Customer: http://localhost:3001/docs
+    - Restaurant: http://localhost:3002/docs
+    - Order: http://localhost:3003/docs
+    - Payment: http://localhost:3004/docs
+    - Delivery: http://localhost:3005/docs
+    - Notification: http://localhost:3006/docs
+
+servers:
+  - url: http://localhost:3000
+    description: API Gateway
+
+tags:
+  - name: Health
+  - name: Routing
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Gateway health check
+      responses:
+        "200": { description: Gateway is up }
+
+  /v1/customers:
+    get:
+      tags: [Routing]
+      summary: → Customer Service (see customer-service /docs)
+      responses:
+        "200": { description: Proxied response }
+        "502":
+          description: Upstream unavailable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/restaurants:
+    get:
+      tags: [Routing]
+      summary: → Restaurant Service (see restaurant-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+  /v1/menu:
+    get:
+      tags: [Routing]
+      summary: → Restaurant Service (see restaurant-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+  /v1/orders:
+    get:
+      tags: [Routing]
+      summary: → Order Service (see order-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+  /v1/payments:
+    get:
+      tags: [Routing]
+      summary: → Payment Service (see payment-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+  /v1/drivers:
+    get:
+      tags: [Routing]
+      summary: → Delivery Service (see delivery-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+  /v1/deliveries:
+    get:
+      tags: [Routing]
+      summary: → Delivery Service (see delivery-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+  /v1/notifications:
+    get:
+      tags: [Routing]
+      summary: → Notification Service (see notification-service /docs)
+      responses:
+        "200": { description: Proxied response }
+
+components:
+  schemas:
+    Error:
+      type: object
+      required: [code, message, correlationId]
+      properties:
+        code: { type: string, example: SERVICE_UNAVAILABLE }
+        message: { type: string }
+        correlationId: { type: string, format: uuid }
